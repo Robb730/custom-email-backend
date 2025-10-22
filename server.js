@@ -33,7 +33,7 @@ app.post("/send-verification", async (req, res) => {
 
     // Generate Firebase verification link
     const link = await admin.auth().generateEmailVerificationLink(email, {
-      url: "https://simplelogin-7b738.firebaseapp.com/__/auth/action?continueUrl=https://your-frontend-domain.com/verified", 
+      url: "https://simplelogin-7b738.firebaseapp.com/__/auth/action?continueUrl=https://localhost:3000/verified", 
       // ⬆ Replace with your actual hosted frontend domain
     });
 
