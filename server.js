@@ -39,19 +39,40 @@ app.post("/send-verification", async (req, res) => {
 
     // Custom HTML email template
     const htmlContent = `
-      <div style="font-family: Arial; background: #f7f7f7; padding: 20px; border-radius: 10px; max-width: 500px;">
-        <h2 style="color:#3b5323;">Welcome to <span style="color:#618c45;">KuboHub</span>, ${displayName}!</h2>
-        <p style="color:#333;">We're excited to have you join our community of travelers.</p>
-        <p style="color:#333;">Click the button below to verify your email address:</p>
-        <a href="${link}" style="background:#4a6b3f; color:white; text-decoration:none; padding:12px 20px; border-radius:8px; display:inline-block;">
-          Verify My Email
-        </a>
-        <p>${link}</p>
-        <p style="color:#555; margin-top:20px;">If you didn’t create this account, you can safely ignore this message.</p>
-        <hr/>
-        <p style="font-size:12px; color:#777;">© 2025 KuboHub | Travel with comfort 🌿</p>
-      </div>
-    `;
+  <div style="font-family: 'Segoe UI', Arial, sans-serif; background: #f5f7f2; padding: 25px; border-radius: 14px; max-width: 550px; margin: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+    <div style="text-align: center; padding-bottom: 10px;">
+      <h1 style="color:#4a6b3f; font-size: 28px; margin-bottom: 5px;">Welcome to <span style="color:#7ba86f;">KuboHub</span> 🌿</h1>
+      <p style="color:#4f4f4f; font-size: 15px; margin: 0;">Hey <strong>${displayName}</strong>, your journey with comfort begins here!</p>
+    </div>
+
+    <div style="margin-top: 20px; color:#333; line-height: 1.6;">
+      <p>
+        We’re thrilled to have you join our growing community of explorers and hosts.  
+        Whether you’re planning your next cozy getaway or sharing your own space, KuboHub is here to make every stay feel like home.
+      </p>
+
+      <p>Before we get started, please verify your email address by clicking the button below:</p>
+    </div>
+
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${link}" style="background:#618c45; color:#fff; text-decoration:none; padding:14px 26px; border-radius:10px; font-weight:600; display:inline-block; font-size:16px;">
+        Verify My Email
+      </a>
+    </div>
+
+    <p style="color:#555; font-size: 14px;">
+      Once verified, you’ll be able to log in, explore listings, and start connecting with hosts or guests across KuboHub.
+    </p>
+
+    <p style="color:#777; font-size: 13px; margin-top: 25px; text-align: center;">
+      If you didn’t create this account, you can safely ignore this message.  
+      <br><br>
+      <hr style="border:none; border-top:1px solid #ddd; margin: 25px 0;">
+      <span style="font-size:12px; color:#888;">© 2025 <strong>KuboHub</strong> | Travel with comfort and peace 🌱</span>
+    </p>
+  </div>
+`;
+
 
     // ✅ Send email using Brevo
     await transporter.sendMail({
