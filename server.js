@@ -3,7 +3,6 @@ const nodemailer = require("nodemailer");
 const admin = require("firebase-admin");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const path = require("path");
 
 dotenv.config();
 
@@ -14,31 +13,31 @@ app.use(cors());
 // Initialize Firebase Admin
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
-
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-// Setup Nodemailer
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // app password (not your real Gmail password)
-  },
-});
+// ✅ Setup Nodemailer with Brevo (Sendinblue)
+const brevoTransport = require("nodemailer-sendinblue-transport");
 
-// Route to send email verification
+const transporter = nodemailer.createTransport(
+  new brevoTransport({
+    apiKey: process.env.BREVO_API_KEY,
+  })
+);
+
+// ✅ Route to send email verification
 app.post("/send-verification", async (req, res) => {
   try {
     const { email, displayName } = req.body;
 
     // Generate Firebase verification link
     const link = await admin.auth().generateEmailVerificationLink(email, {
-      url: "https://simplelogin-7b738.firebaseapp.com/__/auth/action?continueUrl=http://localhost:3000/verified", // frontend redirect after verify
+      url: "https://simplelogin-7b738.firebaseapp.com/__/auth/action?continueUrl=https://your-frontend-domain.com/verified", 
+      // ⬆ Replace with your actual hosted frontend domain
     });
 
-    // Custom email body
+    // Custom HTML email template
     const htmlContent = `
       <div style="font-family: Arial; background: #f7f7f7; padding: 20px; border-radius: 10px; max-width: 500px;">
         <h2 style="color:#3b5323;">Welcome to <span style="color:#618c45;">KuboHub</span>, ${displayName}!</h2>
@@ -54,7 +53,7 @@ app.post("/send-verification", async (req, res) => {
       </div>
     `;
 
-    // Send the email
+    // ✅ Send email using Brevo
     await transporter.sendMail({
       from: `"KuboHub" <${process.env.EMAIL_USER}>`,
       to: email,
@@ -64,11 +63,11 @@ app.post("/send-verification", async (req, res) => {
 
     res.status(200).send("Custom verification email sent!");
   } catch (error) {
-    console.error("Error sending email:", error);
+    console.error("❌ Error sending email:", error);
     res.status(500).send(error.message);
   }
 });
 
+// ✅ Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
-
