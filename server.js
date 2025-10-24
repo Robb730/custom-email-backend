@@ -33,7 +33,7 @@ app.post("/send-verification", async (req, res) => {
 
     // Generate Firebase verification link
     const link = await admin.auth().generateEmailVerificationLink(email, {
-      url: "http://localhost:3000", 
+      url: "https://kubohub.netlify.app/verified", 
       // ⬆ Replace with your actual hosted frontend domain
     });
 
