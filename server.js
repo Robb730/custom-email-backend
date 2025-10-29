@@ -98,25 +98,31 @@ paypal.configure({
 });
 
 // --- Route for cashout (payout) ---
+// --- Route for PayPal Payout ---
 app.post("/api/payout", async (req, res) => {
   try {
-    const { hostId, amount } = req.body;
+    const { hostId, paypalEmail, amount } = req.body;
 
-    // 🔍 Fetch host details from Firestore
-    const hostDoc = await admin.firestore().collection("users").doc(hostId).get();
-    if (!hostDoc.exists) {
+    if (!hostId || !paypalEmail || !amount) {
+      return res.status(400).json({ success: false, message: "Host ID, PayPal email, and amount are required" });
+    }
+
+    // 🔹 Get host email from Firestore
+    const hostRef = admin.firestore().collection("users").doc(hostId);
+    const hostSnap = await hostRef.get();
+
+    if (!hostSnap.exists) {
       return res.status(404).json({ success: false, message: "Host not found" });
     }
 
-    const hostData = hostDoc.data();
+    const hostData = hostSnap.data();
     const hostEmail = hostData.email;
-    const paypalEmail = hostData.paypal;
 
-    if (!paypalEmail) {
-      return res.status(400).json({ success: false, message: "Host PayPal not linked" });
+    if (!hostEmail) {
+      return res.status(400).json({ success: false, message: "Host email not found in Firestore" });
     }
 
-    // 💸 Create PayPal payout
+    // 🔹 Create PayPal payout (to PayPal email from frontend)
     const payoutRequest = {
       sender_batch_header: {
         sender_batch_id: Math.random().toString(36).substring(9),
@@ -129,7 +135,7 @@ app.post("/api/payout", async (req, res) => {
             value: amount,
             currency: "PHP",
           },
-          receiver: paypalEmail,
+          receiver: paypalEmail, // 👈 money goes here
           note: "KuboHub e-wallet withdrawal",
           sender_item_id: "item_1",
         },
@@ -148,28 +154,24 @@ app.post("/api/payout", async (req, res) => {
 
       console.log("✅ PayPal Payout Successful:", payout);
 
-      // --- 📧 Send Email Receipt via Brevo ---
-      const htmlContent = `
-      <div style="font-family: 'Segoe UI', Arial, sans-serif; background:#f5f7f2; padding:25px; border-radius:14px; max-width:550px; margin:auto;">
-        <h2 style="color:#4a6b3f;">Cashout Successful 🌿</h2>
-        <p>Hi <strong>${hostData.displayName || "Host"}</strong>,</p>
-        <p>Your cashout has been successfully initiated.</p>
-        <p><strong>Amount:</strong> ₱${amount}</p>
-        <p><strong>Status:</strong> ${payout.batch_header.batch_status}</p>
-        <p>Funds will appear in your PayPal account (${paypalEmail}) soon.</p>
-        <hr style="border:none; border-top:1px solid #ddd; margin:20px 0;">
-        <p style="font-size:13px; color:#555;">Thank you for using KuboHub 💚</p>
-      </div>
-      `;
-
+      // 🔹 Send receipt email to host (their Firestore email)
       try {
         await transporter.sendMail({
           from: `"KuboHub" <${process.env.EMAIL_USER}>`,
-          to: hostEmail,
+          to: hostEmail, // 👈 receipt goes here
           subject: "KuboHub Cashout Receipt 💸",
-          html: htmlContent,
+          html: `
+            <div style="font-family: 'Segoe UI', Arial, sans-serif; background:#f5f7f2; padding:25px; border-radius:14px; max-width:550px; margin:auto;">
+              <h2 style="color:#4a6b3f;">Cashout Successful 🌿</h2>
+              <p>Your cashout has been successfully initiated.</p>
+              <p><strong>Amount:</strong> ₱${amount}</p>
+              <p>Funds will appear in your entered PayPal account (${paypalEmail}) soon.</p>
+              <hr style="border:none; border-top:1px solid #ddd; margin:20px 0;">
+              <p style="font-size:13px; color:#555;">Thank you for using KuboHub 💚</p>
+            </div>
+          `,
         });
-        console.log(`📧 Receipt sent to ${hostEmail}`);
+        console.log(`📧 Receipt sent to host at ${hostEmail}`);
       } catch (emailError) {
         console.error("❌ Failed to send receipt email:", emailError);
       }
@@ -181,6 +183,9 @@ app.post("/api/payout", async (req, res) => {
     return res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
+
+
+
 
 
 // ✅ Start server
