@@ -88,6 +88,100 @@ app.post("/send-verification", async (req, res) => {
     res.status(500).send(error.message);
   }
 });
+// --- PayPal Integration ---
+const paypal = require("paypal-rest-sdk");
+
+paypal.configure({
+  mode: "sandbox", // Change to "live" when ready
+  client_id: process.env.PAYPAL_CLIENT_ID,
+  client_secret: process.env.PAYPAL_CLIENT_SECRET,
+});
+
+// --- Route for cashout (payout) ---
+app.post("/api/payout", async (req, res) => {
+  try {
+    const { hostId, amount } = req.body;
+
+    // 🔍 Fetch host details from Firestore
+    const hostDoc = await admin.firestore().collection("users").doc(hostId).get();
+    if (!hostDoc.exists) {
+      return res.status(404).json({ success: false, message: "Host not found" });
+    }
+
+    const hostData = hostDoc.data();
+    const hostEmail = hostData.email;
+    const paypalEmail = hostData.paypal;
+
+    if (!paypalEmail) {
+      return res.status(400).json({ success: false, message: "Host PayPal not linked" });
+    }
+
+    // 💸 Create PayPal payout
+    const payoutRequest = {
+      sender_batch_header: {
+        sender_batch_id: Math.random().toString(36).substring(9),
+        email_subject: "You have a payout!",
+      },
+      items: [
+        {
+          recipient_type: "EMAIL",
+          amount: {
+            value: amount,
+            currency: "PHP",
+          },
+          receiver: paypalEmail,
+          note: "KuboHub e-wallet withdrawal",
+          sender_item_id: "item_1",
+        },
+      ],
+    };
+
+    paypal.payout.create(payoutRequest, async (error, payout) => {
+      if (error) {
+        console.error("❌ PayPal Error:", error);
+        return res.status(500).json({
+          success: false,
+          message: error.response?.message || "PayPal payout failed",
+          details: error.response,
+        });
+      }
+
+      console.log("✅ PayPal Payout Successful:", payout);
+
+      // --- 📧 Send Email Receipt via Brevo ---
+      const htmlContent = `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; background:#f5f7f2; padding:25px; border-radius:14px; max-width:550px; margin:auto;">
+        <h2 style="color:#4a6b3f;">Cashout Successful 🌿</h2>
+        <p>Hi <strong>${hostData.displayName || "Host"}</strong>,</p>
+        <p>Your cashout has been successfully initiated.</p>
+        <p><strong>Amount:</strong> ₱${amount}</p>
+        <p><strong>Status:</strong> ${payout.batch_header.batch_status}</p>
+        <p>Funds will appear in your PayPal account (${paypalEmail}) soon.</p>
+        <hr style="border:none; border-top:1px solid #ddd; margin:20px 0;">
+        <p style="font-size:13px; color:#555;">Thank you for using KuboHub 💚</p>
+      </div>
+      `;
+
+      try {
+        await transporter.sendMail({
+          from: `"KuboHub" <${process.env.EMAIL_USER}>`,
+          to: hostEmail,
+          subject: "KuboHub Cashout Receipt 💸",
+          html: htmlContent,
+        });
+        console.log(`📧 Receipt sent to ${hostEmail}`);
+      } catch (emailError) {
+        console.error("❌ Failed to send receipt email:", emailError);
+      }
+
+      return res.json({ success: true, payout });
+    });
+  } catch (err) {
+    console.error("🔥 Server Error:", err);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
 
 // ✅ Start server
 const PORT = process.env.PORT || 5000;
