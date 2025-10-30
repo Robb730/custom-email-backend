@@ -184,6 +184,120 @@ app.post("/api/payout", async (req, res) => {
   }
 });
 
+// ✅ Route to send reservation receipt email
+app.post("/send-reservation-receipt", async (req, res) => {
+  try {
+    const {
+      guestEmail,
+      guestName,
+      listingTitle,
+      checkIn,
+      checkOut,
+      nights,
+      totalAmount,
+      guests,
+      hostName,
+      reservationId,
+    } = req.body;
+
+    const htmlContent = `
+    <div style="font-family: 'Segoe UI', Arial, sans-serif; background: #f5f7f2; padding: 25px; border-radius: 14px; max-width: 550px; margin: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+      <div style="text-align: center; margin-bottom: 15px;">
+        <h1 style="color:#4a6b3f;">Reservation Confirmed 🌿</h1>
+        <p style="color:#555;">Thank you, <strong>${guestName}</strong>! Your stay is officially booked.</p>
+      </div>
+
+      <div style="background: #fff; border-radius: 10px; padding: 20px; border: 1px solid #ddd;">
+        <h3 style="color:#4a6b3f; margin-bottom: 10px;">Booking Details</h3>
+        <p><strong>Reservation ID:</strong> ${reservationId}</p>
+        <p><strong>Listing:</strong> ${listingTitle}</p>
+        <p><strong>Host:</strong> ${hostName}</p>
+        <p><strong>Guests:</strong> ${guests}</p>
+        <p><strong>Check-in:</strong> ${checkIn}</p>
+        <p><strong>Check-out:</strong> ${checkOut}</p>
+        <p><strong>Nights:</strong> ${nights}</p>
+        <p><strong>Total Paid:</strong> ₱${totalAmount.toLocaleString()}</p>
+      </div>
+
+      <div style="text-align:center; margin-top:25px; color:#666;">
+        <p>We’re excited to host you soon! 🎉</p>
+        <p style="font-size:14px;">This serves as your official e-receipt for your KuboHub booking.</p>
+      </div>
+
+      <div style="text-align:center; margin-top:20px;">
+        <a href="https://kubohub.netlify.app" style="background:#618c45; color:#fff; text-decoration:none; padding:10px 20px; border-radius:8px; font-weight:600;">Go to KuboHub</a>
+      </div>
+    </div>`;
+
+    await transporter.sendMail({
+      from: '"KuboHub" <no-reply@kubohub.com>',
+      to: guestEmail,
+      subject: `Your Reservation Confirmation - ${listingTitle}`,
+      html: htmlContent,
+    });
+
+    res.status(200).json({ message: "Reservation receipt sent successfully" });
+  } catch (error) {
+    console.error("Error sending reservation receipt:", error);
+    res.status(500).json({ error: "Failed to send reservation receipt" });
+  }
+});
+
+app.post("/send-cancellation-email", async (req, res) => {
+  try {
+    const {
+      guestEmail,
+      guestName,
+      listingTitle,
+      checkIn,
+      checkOut,
+      totalAmount,
+      hostName,
+      reservationId,
+    } = req.body;
+
+    const htmlContent = `
+    <div style="font-family: 'Segoe UI', Arial, sans-serif; background: #fdf5f5; padding: 25px; border-radius: 14px; max-width: 550px; margin: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+      <div style="text-align: center; margin-bottom: 15px;">
+        <h1 style="color:#c94c4c;">Reservation Canceled ❌</h1>
+        <p style="color:#555;">Hello, <strong>${guestName}</strong>. Your reservation has been canceled.</p>
+      </div>
+
+      <div style="background: #fff; border-radius: 10px; padding: 20px; border: 1px solid #ddd;">
+        <h3 style="color:#c94c4c; margin-bottom: 10px;">Cancellation Details</h3>
+        <p><strong>Reservation ID:</strong> ${reservationId}</p>
+        <p><strong>Listing:</strong> ${listingTitle}</p>
+        <p><strong>Host:</strong> ${hostName}</p>
+        <p><strong>Check-in:</strong> ${checkIn}</p>
+        <p><strong>Check-out:</strong> ${checkOut}</p>
+      </div>
+
+      <div style="text-align:center; margin-top:25px; color:#666;">
+        <p>We’re sorry to see your plans change, but we hope to host you in the future.</p>
+        <p style="font-size:14px;">If you have questions about refunds or policies, please contact your host.</p>
+      </div>
+
+      <div style="text-align:center; margin-top:20px;">
+        <a href="https://kubohub.netlify.app" style="background:#c94c4c; color:#fff; text-decoration:none; padding:10px 20px; border-radius:8px; font-weight:600;">Go to KuboHub</a>
+      </div>
+    </div>`;
+
+    await transporter.sendMail({
+      from: '"KuboHub" <no-reply@kubohub.com>',
+      to: guestEmail,
+      subject: `Reservation Canceled - ${listingTitle}`,
+      html: htmlContent,
+    });
+
+    res.status(200).json({ message: "Cancellation email sent successfully" });
+  } catch (error) {
+    console.error("Error sending cancellation email:", error);
+    res.status(500).json({ error: "Failed to send cancellation email" });
+  }
+});
+
+
+
 
 
 
