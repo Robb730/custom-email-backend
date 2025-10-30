@@ -187,6 +187,7 @@ app.post("/api/payout", async (req, res) => {
 // ✅ Route to send reservation receipt email
 app.post("/send-reservation-receipt", async (req, res) => {
   try {
+    console.log("📩 Full request body:", req.body);
     const {
       guestEmail,
       guestName,
@@ -215,7 +216,7 @@ app.post("/send-reservation-receipt", async (req, res) => {
         <p><strong>Guests:</strong> ${guests}</p>
         <p><strong>Check-in:</strong> ${checkIn}</p>
         <p><strong>Check-out:</strong> ${checkOut}</p>
-        <p><strong>Check-out:</strong> ${nights}</p>
+        <p><strong>Nights:</strong> ${nights}</p>
         <p><strong>Total Paid:</strong> ₱${totalAmount}</p>
       </div>
 
@@ -230,7 +231,7 @@ app.post("/send-reservation-receipt", async (req, res) => {
     </div>`;
 
     await transporter.sendMail({
-      from: '"KuboHub" <no-reply@kubohub.com>',
+      from: `"KuboHub" <${process.env.EMAIL_USER}>`,
       to: guestEmail,
       subject: `Your Reservation Confirmation - ${listingTitle}`,
       html: htmlContent,
@@ -242,6 +243,7 @@ app.post("/send-reservation-receipt", async (req, res) => {
     res.status(500).json({ error: "Failed to send reservation receipt" });
   }
 });
+
 
 app.post("/send-cancellation-email", async (req, res) => {
   try {
@@ -270,6 +272,7 @@ app.post("/send-cancellation-email", async (req, res) => {
         <p><strong>Host:</strong> ${hostName}</p>
         <p><strong>Check-in:</strong> ${checkIn}</p>
         <p><strong>Check-out:</strong> ${checkOut}</p>
+        <p><strong>Total Amount:</strong> ${totalAmount}</p>
       </div>
 
       <div style="text-align:center; margin-top:25px; color:#666;">
@@ -283,7 +286,7 @@ app.post("/send-cancellation-email", async (req, res) => {
     </div>`;
 
     await transporter.sendMail({
-      from: '"KuboHub" <no-reply@kubohub.com>',
+      from: `"KuboHub" <${process.env.EMAIL_USER}>`,
       to: guestEmail,
       subject: `Reservation Canceled - ${listingTitle}`,
       html: htmlContent,
