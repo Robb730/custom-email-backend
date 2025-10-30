@@ -216,7 +216,7 @@ app.post("/send-reservation-receipt", async (req, res) => {
         <p><strong>Check-in:</strong> ${checkIn}</p>
         <p><strong>Check-out:</strong> ${checkOut}</p>
         <p><strong>Check-out:</strong> ${nights}</p>
-        <p><strong>Total Paid:</strong> ₱${totalAmount.toLocaleString()}</p>
+        <p><strong>Total Paid:</strong> ₱${totalAmount}</p>
       </div>
 
       <div style="text-align:center; margin-top:25px; color:#666;">
