@@ -191,12 +191,11 @@ app.post("/send-reservation-receipt", async (req, res) => {
       guestEmail,
       guestName,
       listingTitle,
+      hostName,
       checkIn,
       checkOut,
-      nights,
       totalAmount,
       guests,
-      hostName,
       reservationId,
     } = req.body;
 
@@ -215,7 +214,6 @@ app.post("/send-reservation-receipt", async (req, res) => {
         <p><strong>Guests:</strong> ${guests}</p>
         <p><strong>Check-in:</strong> ${checkIn}</p>
         <p><strong>Check-out:</strong> ${checkOut}</p>
-        <p><strong>Nights:</strong> ${nights}</p>
         <p><strong>Total Paid:</strong> ₱${totalAmount.toLocaleString()}</p>
       </div>
 
