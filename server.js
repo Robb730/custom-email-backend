@@ -103,12 +103,10 @@ app.post("/api/payout", async (req, res) => {
     const { hostId, paypalEmail, amount } = req.body;
 
     if (!hostId || !paypalEmail || !amount) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Host ID, PayPal email, and amount are required",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Host ID, PayPal email, and amount are required",
+      });
     }
 
     // 🔹 Get host email from Firestore
@@ -528,76 +526,75 @@ app.post("/send-reward-code", async (req, res) => {
       req.body;
 
     const htmlContent = `
-    <div style="font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #6b7c59 0%, #8b9a7a 100%); padding: 40px 25px; border-radius: 16px; max-width: 550px; margin: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.15);">
-      
-      <!-- Header with celebration -->
-      <div style="text-align: center; margin-bottom: 25px;">
-        <div style="font-size: 48px; margin-bottom: 10px;">🎉</div>
-        <h1 style="color:#fff; margin: 10px 0; font-size: 32px; font-weight: 700;">You've Earned a Reward!</h1>
-        <p style="color:#f5f7f3; font-size: 16px;">Congratulations, <strong>${hostName}</strong>!</p>
-      </div>
+    <div style="font-family: 'Segoe UI', Arial, sans-serif; background:#f7f8f5; padding: 24px; border-radius: 12px; max-width: 520px; margin:auto; border:1px solid #e2e4dd;">
 
-      <!-- Reward Code Card -->
-      <div style="background: #fff; border-radius: 12px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.1);">
-        <div style="text-align: center;">
-          <p style="color:#666; margin-bottom: 15px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Your Exclusive Code</p>
-          
-          <!-- Reward Code Display -->
-          <div style="background: linear-gradient(135deg, #6b7c59 0%, #8b9a7a 100%); padding: 20px; border-radius: 10px; margin: 20px 0; border: 3px dashed #fff; box-shadow: 0 0 0 4px #6b7c59;">
-            <div style="color:#fff; font-size: 32px; font-weight: 700; letter-spacing: 3px; font-family: 'Courier New', monospace;">${code}</div>
+  <!-- Header -->
+  <div style="text-align:center; margin-bottom:18px;">
+      <h2 style="margin:0; font-size:22px; font-weight:600; color:#4d5a3a;">
+        Your Reward Code is Ready
+      </h2>
+      <p style="margin-top:6px; margin-bottom:0; font-size:14px; color:#6a7660;">
+        Hello ${hostName}, here are the details of your earned reward.
+      </p>
+  </div>
+
+  <!-- Reward Code Box -->
+  <div style="background:#ffffff; border-radius:10px; padding:20px; border:1px solid #d7dbd0; text-align:center;">
+      <p style="margin:0; font-size:13px; color:#6a6a6a; text-transform:uppercase; letter-spacing:0.5px;">
+        Reward Code
+      </p>
+
+      <div style="background:#6f7c5c; padding:16px; border-radius:8px; margin:16px 0; border:2px dashed #ffffff;">
+          <div style="color:#fff; font-size:28px; font-weight:700; letter-spacing:3px; font-family:'Courier New', monospace;">
+            ${code}
           </div>
-
-          <p style="color:#888; font-size: 13px; margin-top: 15px;">Click to copy code or save for later</p>
-        </div>
-
-        <!-- Reward Details -->
-        <div style="margin-top: 25px; padding-top: 25px; border-top: 2px solid #f0f0f0;">
-          <h3 style="color:#6b7c59; margin-bottom: 15px; font-size: 18px;">Reward Details</h3>
-          <table style="width: 100%; color:#555; font-size: 14px;">
-            <tr>
-              <td style="padding: 8px 0;"><strong>Reward Title</strong></td>
-              <td style="padding: 8px 0; text-align: right; color:#667eea; font-weight: 600;">${rewardTitle}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0;"><strong>Amount:</strong></td>
-              <td style="padding: 8px 0; text-align: right; color:#667eea; font-weight: 600;">${rewardAmount}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0;"><strong>Reward Type:</strong></td>
-              <td style="padding: 8px 0; text-align: right;">${rewardType}</td>
-            </tr>
-          </table>
-        </div>
       </div>
 
-      <!-- How to Redeem -->
-      <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.2);">
-        <h3 style="color:#fff; margin-bottom: 12px; font-size: 16px;">✨ How to Redeem</h3>
-        <ol style="color:#f0e7ff; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
-          <li>Browse available listings on KuboHub</li>
-          <li>Select your preferred dates and accommodation</li>
-          <li>Enter your reward code at checkout</li>
-          <li>Enjoy your discounted stay!</li>
-        </ol>
-      </div>
+      <p style="margin:0; font-size:12px; color:#888;">
+        Keep this code for your next use.
+      </p>
+  </div>
 
-      <!-- Message -->
-      <div style="text-align:center; margin: 25px 0; color:#fff;">
-        <p style="font-size: 15px; line-height: 1.6; margin-bottom: 10px;">Thank you for being a valued member of the KuboHub community!</p>
-        <p style="font-size: 13px; color:#f0e7ff;">This reward is our way of saying thanks for your continued support.</p>
-      </div>
+  <!-- Reward Details -->
+  <div style="margin-top:22px; padding:16px; background:#ffffff; border-radius:10px; border:1px solid #d7dbd0;">
+      <h3 style="margin:0 0 12px 0; font-size:15px; font-weight:600; color:#4d5a3a;">
+        Reward Details
+      </h3>
 
-      <!-- CTA Button -->
-      <div style="text-align:center; margin-top:25px;">
-        <a href="https://kubohub.netlify.app" style="display: inline-block; background:#fff; color:#667eea; text-decoration:none; padding:14px 35px; border-radius:30px; font-weight:700; font-size: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">Book Your Stay Now →</a>
-      </div>
+      <table style="width:100%; font-size:14px; color:#4d4d4d;">
+          <tr>
+              <td style="padding:6px 0; font-weight:500;">Title</td>
+              <td style="padding:6px 0; text-align:right; color:#4d5a3a;">${rewardTitle}</td>
+          </tr>
+          <tr>
+              <td style="padding:6px 0; font-weight:500;">Amount</td>
+              <td style="padding:6px 0; text-align:right; color:#4d5a3a;">${rewardAmount}</td>
+          </tr>
+          <tr>
+              <td style="padding:6px 0; font-weight:500;">Type</td>
+              <td style="padding:6px 0; text-align:right;">${rewardType}</td>
+          </tr>
+      </table>
+  </div>
 
-      <!-- Footer -->
-      <div style="text-align:center; margin-top:30px; padding-top:20px; border-top: 1px solid rgba(255,255,255,0.2);">
-        <p style="color:#f0e7ff; font-size: 12px; margin: 5px 0;">Questions? Contact us at support@kubohub.com</p>
-        <p style="color:#f0e7ff; font-size: 11px; margin-top: 15px;">© 2025 KuboHub. All rights reserved.</p>
-      </div>
-    </div>`;
+  <!-- Minimal instructions (Transactional, not promotional) -->
+  <div style="margin-top:22px; color:#5a5f52; font-size:13px; line-height:1.55;">
+      <p style="margin-top:0;">
+        You can redeem this reward during your next transaction by entering the code at checkout.
+      </p>
+  </div>
+
+  <!-- Support Footer -->
+  <div style="margin-top:28px; padding-top:12px; border-top:1px solid #d7dbd0; text-align:center;">
+      <p style="font-size:12px; color:#8a8f84; margin:4px 0;">
+        For questions, contact us at support@kubohub.com
+      </p>
+      <p style="font-size:11px; color:#a3a7a1; margin:6px 0 0;">
+        © 2025 KuboHub
+      </p>
+  </div>
+
+</div>`;
 
     try {
       const info = await transporter.sendMail({
