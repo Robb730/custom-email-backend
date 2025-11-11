@@ -33,7 +33,7 @@ app.post("/send-verification", async (req, res) => {
 
     // Generate Firebase verification link
     const link = await admin.auth().generateEmailVerificationLink(email, {
-      url: "https://kubohub.netlify.app/verified", 
+      url: "https://kubohub.netlify.app/verified",
       // ⬆ Replace with your actual hosted frontend domain
     });
 
@@ -73,7 +73,6 @@ app.post("/send-verification", async (req, res) => {
   </div>
 `;
 
-
     // ✅ Send email using Brevo
     await transporter.sendMail({
       from: `"KuboHub" <${process.env.EMAIL_USER}>`,
@@ -104,7 +103,12 @@ app.post("/api/payout", async (req, res) => {
     const { hostId, paypalEmail, amount } = req.body;
 
     if (!hostId || !paypalEmail || !amount) {
-      return res.status(400).json({ success: false, message: "Host ID, PayPal email, and amount are required" });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Host ID, PayPal email, and amount are required",
+        });
     }
 
     // 🔹 Get host email from Firestore
@@ -112,14 +116,18 @@ app.post("/api/payout", async (req, res) => {
     const hostSnap = await hostRef.get();
 
     if (!hostSnap.exists) {
-      return res.status(404).json({ success: false, message: "Host not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Host not found" });
     }
 
     const hostData = hostSnap.data();
     const hostEmail = hostData.email;
 
     if (!hostEmail) {
-      return res.status(400).json({ success: false, message: "Host email not found in Firestore" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Host email not found in Firestore" });
     }
 
     // 🔹 Create PayPal payout (to PayPal email from frontend)
@@ -180,7 +188,9 @@ app.post("/api/payout", async (req, res) => {
     });
   } catch (err) {
     console.error("🔥 Server Error:", err);
-    return res.status(500).json({ success: false, message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
   }
 });
 
@@ -256,7 +266,6 @@ app.post("/send-reservation-receipt-experiences", async (req, res) => {
       totalAmount,
       guests,
       reservationId,
-      
     } = req.body;
 
     const htmlContent = `
@@ -311,7 +320,6 @@ app.post("/send-reservation-receipt-services", async (req, res) => {
       bookedDate,
       totalAmount,
       reservationId,
-      
     } = req.body;
 
     const htmlContent = `
@@ -353,7 +361,6 @@ app.post("/send-reservation-receipt-services", async (req, res) => {
     res.status(500).json({ error: "Failed to send reservation receipt" });
   }
 });
-
 
 app.post("/send-cancellation-email", async (req, res) => {
   try {
@@ -408,7 +415,6 @@ app.post("/send-cancellation-email", async (req, res) => {
     res.status(500).json({ error: "Failed to send cancellation email" });
   }
 });
-
 
 app.post("/send-cancellation-email-experiences", async (req, res) => {
   try {
@@ -515,15 +521,11 @@ app.post("/send-cancellation-email-services", async (req, res) => {
 });
 
 app.post("/send-reward-code", async (req, res) => {
+  console.log("✅ /send-reward-code hit");
+  console.log("Body received:", req.body);
   try {
-    const {
-      hostEmail,
-      hostName,
-      code,
-      rewardTitle,
-      rewardType,
-      rewardAmount,
-    } = req.body;
+    const { hostEmail, hostName, code, rewardTitle, rewardType, rewardAmount } =
+      req.body;
 
     const htmlContent = `
     <div style="font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #6b7c59 0%, #8b9a7a 100%); padding: 40px 25px; border-radius: 16px; max-width: 550px; margin: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.15);">
@@ -597,12 +599,18 @@ app.post("/send-reward-code", async (req, res) => {
       </div>
     </div>`;
 
-    await transporter.sendMail({
-      from: `"KuboHub" <${process.env.EMAIL_USER}>`,
-      to: hostEmail,
-      subject: `Reward Code`,
-      html: htmlContent,
-    });
+    try {
+      const info = await transporter.sendMail({
+        from: `"KuboHub" <${process.env.EMAIL_USER}>`,
+        to: hostEmail,
+        subject: `Reward Code:`,
+        html: htmlContent,
+      });
+
+      console.log("✅ Email sent:", info);
+    } catch (err) {
+      console.error("❌ Nodemailer error:", err);
+    }
 
     res.status(200).json({ message: "Cancellation email sent successfully" });
   } catch (error) {
@@ -610,12 +618,6 @@ app.post("/send-reward-code", async (req, res) => {
     res.status(500).json({ error: "Failed to send cancellation email" });
   }
 });
-
-
-
-
-
-
 
 // ✅ Start server
 const PORT = process.env.PORT || 5000;
