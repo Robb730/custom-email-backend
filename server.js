@@ -603,7 +603,7 @@ app.post("/send-reward-code", async (req, res) => {
       const info = await transporter.sendMail({
         from: `"KuboHub" <${process.env.EMAIL_USER}>`,
         to: hostEmail,
-        subject: `Reward Code:`,
+        subject: `Reward Code`,
         html: htmlContent,
       });
 
