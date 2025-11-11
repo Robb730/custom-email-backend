@@ -514,6 +514,103 @@ app.post("/send-cancellation-email-services", async (req, res) => {
   }
 });
 
+app.post("/send-reward-code", async (req, res) => {
+  try {
+    const {
+      hostEmail,
+      hostName,
+      code,
+      rewardTitle,
+      rewardType,
+      rewardAmount,
+    } = req.body;
+
+    const htmlContent = `
+    <div style="font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #6b7c59 0%, #8b9a7a 100%); padding: 40px 25px; border-radius: 16px; max-width: 550px; margin: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.15);">
+      
+      <!-- Header with celebration -->
+      <div style="text-align: center; margin-bottom: 25px;">
+        <div style="font-size: 48px; margin-bottom: 10px;">🎉</div>
+        <h1 style="color:#fff; margin: 10px 0; font-size: 32px; font-weight: 700;">You've Earned a Reward!</h1>
+        <p style="color:#f5f7f3; font-size: 16px;">Congratulations, <strong>${hostName}</strong>!</p>
+      </div>
+
+      <!-- Reward Code Card -->
+      <div style="background: #fff; border-radius: 12px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.1);">
+        <div style="text-align: center;">
+          <p style="color:#666; margin-bottom: 15px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Your Exclusive Code</p>
+          
+          <!-- Reward Code Display -->
+          <div style="background: linear-gradient(135deg, #6b7c59 0%, #8b9a7a 100%); padding: 20px; border-radius: 10px; margin: 20px 0; border: 3px dashed #fff; box-shadow: 0 0 0 4px #6b7c59;">
+            <div style="color:#fff; font-size: 32px; font-weight: 700; letter-spacing: 3px; font-family: 'Courier New', monospace;">${code}</div>
+          </div>
+
+          <p style="color:#888; font-size: 13px; margin-top: 15px;">Click to copy code or save for later</p>
+        </div>
+
+        <!-- Reward Details -->
+        <div style="margin-top: 25px; padding-top: 25px; border-top: 2px solid #f0f0f0;">
+          <h3 style="color:#6b7c59; margin-bottom: 15px; font-size: 18px;">Reward Details</h3>
+          <table style="width: 100%; color:#555; font-size: 14px;">
+            <tr>
+              <td style="padding: 8px 0;"><strong>Reward Title</strong></td>
+              <td style="padding: 8px 0; text-align: right; color:#667eea; font-weight: 600;">${rewardTitle}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0;"><strong>Amount:</strong></td>
+              <td style="padding: 8px 0; text-align: right; color:#667eea; font-weight: 600;">${rewardAmount}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0;"><strong>Reward Type:</strong></td>
+              <td style="padding: 8px 0; text-align: right;">${rewardType}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- How to Redeem -->
+      <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.2);">
+        <h3 style="color:#fff; margin-bottom: 12px; font-size: 16px;">✨ How to Redeem</h3>
+        <ol style="color:#f0e7ff; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
+          <li>Browse available listings on KuboHub</li>
+          <li>Select your preferred dates and accommodation</li>
+          <li>Enter your reward code at checkout</li>
+          <li>Enjoy your discounted stay!</li>
+        </ol>
+      </div>
+
+      <!-- Message -->
+      <div style="text-align:center; margin: 25px 0; color:#fff;">
+        <p style="font-size: 15px; line-height: 1.6; margin-bottom: 10px;">Thank you for being a valued member of the KuboHub community!</p>
+        <p style="font-size: 13px; color:#f0e7ff;">This reward is our way of saying thanks for your continued support.</p>
+      </div>
+
+      <!-- CTA Button -->
+      <div style="text-align:center; margin-top:25px;">
+        <a href="https://kubohub.netlify.app" style="display: inline-block; background:#fff; color:#667eea; text-decoration:none; padding:14px 35px; border-radius:30px; font-weight:700; font-size: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">Book Your Stay Now →</a>
+      </div>
+
+      <!-- Footer -->
+      <div style="text-align:center; margin-top:30px; padding-top:20px; border-top: 1px solid rgba(255,255,255,0.2);">
+        <p style="color:#f0e7ff; font-size: 12px; margin: 5px 0;">Questions? Contact us at support@kubohub.com</p>
+        <p style="color:#f0e7ff; font-size: 11px; margin-top: 15px;">© 2025 KuboHub. All rights reserved.</p>
+      </div>
+    </div>`;
+
+    await transporter.sendMail({
+      from: `"KuboHub" <${process.env.EMAIL_USER}>`,
+      to: hostEmail,
+      subject: `Reward Code`,
+      html: htmlContent,
+    });
+
+    res.status(200).json({ message: "Cancellation email sent successfully" });
+  } catch (error) {
+    console.error("Error sending cancellation email:", error);
+    res.status(500).json({ error: "Failed to send cancellation email" });
+  }
+});
+
 
 
 
